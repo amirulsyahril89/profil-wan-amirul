@@ -202,12 +202,11 @@
       <div class="hero-badges">
         <span class="badge gold">🏅 Guru Peneraju Generasi Digital KPM</span>
         <span class="badge">📍 SK Bohor Baharu, Bandar Bera</span>
+        <span class="badge">🎓 DG10</span>
       </div>
     </div>
-<div class="hero-photo" id="heroPhoto">
-    <img src="gambar.png" alt="Wan Amirul Syahril">
-</div>  
-</div>
+    <div class="hero-photo" id="heroPhoto">👳🏻‍♂️</div>
+  </div>
 </header>
 
 <main>
@@ -378,6 +377,9 @@ function renderContact(profil){
   if(profil.emel) links.push(`<a href="mailto:${profil.emel}">Emel</a>`);
   if(profil.telefon) links.push(`<a href="tel:${profil.telefon}">Telefon</a>`);
   el.innerHTML = links.join('');
+  if(profil.gambar_url){
+    document.getElementById('heroPhoto').innerHTML = `<img src="${profil.gambar_url}" alt="${profil.nama||'Gambar profil'}">`;
+  }
 }
 
 async function loadData(){
