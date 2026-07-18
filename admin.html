@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin — Kemaskini Profil</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#7A1F2B; --teal-deep:#4A1017; --teal-tint:#F6E9EA;
+    --ink:#241618; --amber:#F3A93B; --paper:#FAF8F7; --line:#E5D9D8;
+    --danger:#C1443B;
+  }
+  *{box-sizing:border-box;}
+  body{font-family:'Plus Jakarta Sans',sans-serif; background:var(--paper); color:var(--ink); margin:0; padding-bottom:60px;}
+  header{background:var(--teal); color:#fff; padding:18px 20px; position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center;}
+  header h1{font-family:'Space Grotesk',sans-serif; font-size:1.1rem; margin:0;}
+  header button{background:rgba(255,255,255,0.15); border:none; color:#fff; padding:8px 14px; border-radius:8px; font-size:0.85rem; font-weight:600;}
+  .wrap{max-width:640px; margin:0 auto; padding:20px;}
+  .tabs{display:flex; overflow-x:auto; gap:8px; margin-bottom:20px; -webkit-overflow-scrolling:touch;}
+  .tab{flex:none; padding:9px 16px; border-radius:99px; border:1px solid var(--line); background:#fff; font-size:0.85rem; font-weight:600; white-space:nowrap;}
+  .tab.active{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:14px;}
+  label{display:block; font-size:0.82rem; font-weight:600; color:#4A3638; margin:12px 0 5px;}
+  label:first-child{margin-top:0;}
+  input[type=text], input[type=number], input[type=email], input[type=password], input[type=date], textarea{
+    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:9px; font-size:0.95rem; font-family:inherit; background:#FBFDFC;
+  }
+  textarea{min-height:80px; resize:vertical;}
+  input[type=file]{width:100%; font-size:0.85rem; margin-top:4px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .btn{display:inline-block; background:var(--teal); color:#fff; border:none; padding:12px 18px; border-radius:9px; font-weight:700; font-size:0.92rem; cursor:pointer; width:100%; margin-top:14px;}
+  .btn.secondary{background:#fff; color:var(--teal); border:1px solid var(--teal);}
+  .btn.danger{background:#fff; color:var(--danger); border:1px solid var(--danger); width:auto; padding:8px 14px; font-size:0.82rem; margin-top:0;}
+  .btn.small{width:auto; padding:8px 14px; font-size:0.82rem; margin-top:0;}
+  .entry{border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .entry-title{font-weight:700; font-size:0.95rem;}
+  .entry-sub{font-size:0.82rem; color:#6E5B5D; margin-top:2px;}
+  .msg{font-size:0.85rem; padding:10px 12px; border-radius:8px; margin-bottom:14px;}
+  .msg.ok{background:#F6E9EA; color:var(--teal-deep);}
+  .msg.err{background:#FBE9E7; color:var(--danger);}
+  .login-box{max-width:340px; margin:80px auto; text-align:center;}
+  .login-box h2{font-family:'Space Grotesk',sans-serif; margin-bottom:6px;}
+  .login-box p{font-size:0.88rem; color:#6E5B5D; margin-bottom:20px;}
+  .checkbox-current{display:flex; align-items:center; gap:8px; margin-top:10px;}
+  .checkbox-current input{width:auto;}
+  .section-label{font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--teal); margin:22px 0 10px;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="wrap">
+  <div class="login-box">
+    <h2>Panel Admin</h2>
+    <p>Log masuk untuk kemaskini profil anda</p>
+    <div id="loginMsg"></div>
+    <label>Emel</label>
+    <input type="email" id="loginEmail" placeholder="emel@contoh.com">
+    <label>Kata Laluan</label>
+    <input type="password" id="loginPass">
+    <button class="btn" onclick="doLogin()">Log Masuk</button>
+  </div>
+</div>
+
+<div id="adminScreen" style="display:none;">
+  <header>
+    <h1>Kemaskini Profil</h1>
+    <button onclick="doLogout()">Log Keluar</button>
+  </header>
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="profil">Profil</button>
+      <button class="tab" data-tab="sejarah">Kerjaya</button>
+      <button class="tab" data-tab="perkhidmatan">Perkhidmatan</button>
+      <button class="tab" data-tab="kursus">Kursus</button>
+      <button class="tab" data-tab="sijil">Sijil</button>
+      <button class="tab" data-tab="bengkel">Bengkel</button>
+    </div>
+
+    <!-- PROFIL -->
+    <div class="panel active" id="panel-profil">
+      <div class="card">
+        <div id="msg-profil"></div>
+        <label>Nama Penuh</label>
+        <input type="text" id="p_nama">
+        <label>Jawatan</label>
+        <input type="text" id="p_jawatan">
+        <label>Tagline / Gelaran Khas</label>
+        <input type="text" id="p_tagline">
+        <label>Bio Ringkas</label>
+        <textarea id="p_bio"></textarea>
+        <label>Emel</label>
+        <input type="email" id="p_emel">
+        <label>Telefon</label>
+        <input type="text" id="p_telefon">
+        <label>Gambar Profil</label>
+        <input type="file" id="p_gambar_file" accept="image/*" capture="user">
+        <button class="btn" onclick="simpanProfil()">Simpan Profil</button>
+      </div>
+    </div>
+
+    <!-- SEJARAH PERKHIDMATAN -->
+    <div class="panel" id="panel-sejarah">
+      <div class="card">
+        <div id="msg-sejarah"></div>
+        <label>Nama Institusi</label>
+        <input type="text" id="s_institusi">
+        <label>Lokasi</label>
+        <input type="text" id="s_lokasi">
+        <div class="row2">
+          <div><label>Tahun Mula</label><input type="number" id="s_mula" placeholder="2022"></div>
+          <div><label>Tahun Tamat</label><input type="number" id="s_tamat" placeholder="kosongkan jika semasa"></div>
+        </div>
+        <button class="btn" onclick="tambahSejarah()">Tambah Rekod</button>
+      </div>
+      <div class="section-label">Rekod Sedia Ada</div>
+      <div id="list-sejarah"></div>
+    </div>
+
+    <!-- PERKHIDMATAN -->
+    <div class="panel" id="panel-perkhidmatan">
+      <div class="card">
+        <div id="msg-perkhidmatan"></div>
+        <label>Ikon (emoji)</label>
+        <input type="text" id="pk_ikon" placeholder="💻">
+        <label>Tajuk Perkhidmatan</label>
+        <input type="text" id="pk_tajuk">
+        <label>Keterangan</label>
+        <textarea id="pk_keterangan"></textarea>
+        <button class="btn" onclick="tambahPerkhidmatan()">Tambah Perkhidmatan</button>
+      </div>
+      <div class="section-label">Senarai Sedia Ada</div>
+      <div id="list-perkhidmatan"></div>
+    </div>
+
+    <!-- KURSUS DISERTAI -->
+    <div class="panel" id="panel-kursus">
+      <div class="card">
+        <div id="msg-kursus"></div>
+        <label>Tajuk Kursus</label>
+        <input type="text" id="k_tajuk">
+        <label>Penganjur</label>
+        <input type="text" id="k_penganjur">
+        <label>Tahun</label>
+        <input type="number" id="k_tahun">
+        <label>Fail Sijil (PDF/Gambar)</label>
+        <input type="file" id="k_fail" accept="image/*,application/pdf" capture="environment">
+        <button class="btn" onclick="tambahKursus()">Tambah Kursus</button>
+      </div>
+      <div class="section-label">Senarai Sedia Ada</div>
+      <div id="list-kursus"></div>
+    </div>
+
+    <!-- SIJIL -->
+    <div class="panel" id="panel-sijil">
+      <div class="card">
+        <div id="msg-sijil"></div>
+        <label>Tajuk Sijil</label>
+        <input type="text" id="sj_tajuk">
+        <label>Pengeluar</label>
+        <input type="text" id="sj_pengeluar">
+        <label>Tahun</label>
+        <input type="number" id="sj_tahun">
+        <label>Fail Sijil</label>
+        <input type="file" id="sj_fail" accept="image/*,application/pdf" capture="environment">
+        <button class="btn" onclick="tambahSijil()">Tambah Sijil</button>
+      </div>
+      <div class="section-label">Senarai Sedia Ada</div>
+      <div id="list-sijil"></div>
+    </div>
+
+    <!-- BENGKEL DIKENDALIKAN -->
+    <div class="panel" id="panel-bengkel">
+      <div class="card">
+        <div id="msg-bengkel"></div>
+        <label>Tajuk Kursus/Bengkel</label>
+        <input type="text" id="b_tajuk">
+        <label>Peranan</label>
+        <input type="text" id="b_peranan" placeholder="Fasilitator / Penceramah Jemputan">
+        <label>Anjuran</label>
+        <input type="text" id="b_anjuran">
+        <div class="row2">
+          <div><label>Tarikh</label><input type="date" id="b_tarikh"></div>
+          <div><label>Lokasi</label><input type="text" id="b_lokasi"></div>
+        </div>
+        <label>Keterangan</label>
+        <textarea id="b_keterangan"></textarea>
+        <label>Fail Sijil</label>
+        <input type="file" id="b_sijil_fail" accept="image/*,application/pdf" capture="environment">
+        <label>Gambar (boleh pilih beberapa sekaligus)</label>
+        <input type="file" id="b_gambar_files" accept="image/*" capture="environment" multiple>
+        <button class="btn" onclick="tambahBengkel()">Tambah Rekod Bengkel</button>
+      </div>
+      <div class="section-label">Senarai Sedia Ada</div>
+      <div id="list-bengkel"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const sb = (typeof SUPABASE_URL !== 'undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+function showMsg(id, text, ok=true){
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="msg ${ok?'ok':'err'}">${text}</div>`;
+  setTimeout(()=>{ el.innerHTML=''; }, 4000);
+}
+
+// ---------- AUTH ----------
+async function doLogin(){
+  if(!sb){ showMsg('loginMsg','Sila konfigurasi config.js dahulu.', false); return; }
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPass').value;
+  const {data, error} = await sb.auth.signInWithPassword({email, password});
+  if(error){ document.getElementById('loginMsg').innerHTML = `<div class="msg err">${error.message}</div>`; return; }
+  showAdmin();
+}
+async function doLogout(){
+  await sb.auth.signOut();
+  location.reload();
+}
+async function checkSession(){
+  if(!sb) return;
+  const {data} = await sb.auth.getSession();
+  if(data.session) showAdmin();
+}
+function showAdmin(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminScreen').style.display='block';
+  muatSemua();
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- UPLOAD HELPER ----------
+async function uploadFail(bucket, file){
+  if(!file) return null;
+  const namaFail = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g,'_')}`;
+  const {data, error} = await sb.storage.from(bucket).upload(namaFail, file);
+  if(error){ throw error; }
+  const { data: urlData } = sb.storage.from(bucket).getPublicUrl(namaFail);
+  return urlData.publicUrl;
+}
+
+// ---------- PROFIL ----------
+async function muatProfil(){
+  const {data} = await sb.from('profil').select('*').single();
+  if(!data) return;
+  document.getElementById('p_nama').value = data.nama||'';
+  document.getElementById('p_jawatan').value = data.jawatan||'';
+  document.getElementById('p_tagline').value = data.tagline||'';
+  document.getElementById('p_bio').value = data.bio||'';
+  document.getElementById('p_emel').value = data.emel||'';
+  document.getElementById('p_telefon').value = data.telefon||'';
+}
+async function simpanProfil(){
+  try{
+    let gambar_url;
+    const file = document.getElementById('p_gambar_file').files[0];
+    if(file) gambar_url = await uploadFail('gambar', file);
+    const payload = {
+      id:1,
+      nama: document.getElementById('p_nama').value,
+      jawatan: document.getElementById('p_jawatan').value,
+      tagline: document.getElementById('p_tagline').value,
+      bio: document.getElementById('p_bio').value,
+      emel: document.getElementById('p_emel').value,
+      telefon: document.getElementById('p_telefon').value,
+    };
+    if(gambar_url) payload.gambar_url = gambar_url;
+    const {error} = await sb.from('profil').upsert(payload);
+    if(error) throw error;
+    showMsg('msg-profil','Profil berjaya disimpan.');
+  }catch(e){ showMsg('msg-profil', e.message, false); }
+}
+
+// ---------- SEJARAH ----------
+async function tambahSejarah(){
+  try{
+    const payload = {
+      institusi: document.getElementById('s_institusi').value,
+      lokasi: document.getElementById('s_lokasi').value,
+      tahun_mula: parseInt(document.getElementById('s_mula').value)||null,
+      tahun_tamat: parseInt(document.getElementById('s_tamat').value)||null,
+    };
+    const {error} = await sb.from('sejarah_perkhidmatan').insert(payload);
+    if(error) throw error;
+    showMsg('msg-sejarah','Rekod ditambah.');
+    ['s_institusi','s_lokasi','s_mula','s_tamat'].forEach(id=>document.getElementById(id).value='');
+    muatSejarah();
+  }catch(e){ showMsg('msg-sejarah', e.message, false); }
+}
+async function muatSejarah(){
+  const {data} = await sb.from('sejarah_perkhidmatan').select('*').order('turutan');
+  const el = document.getElementById('list-sejarah');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.institusi}</div><div class="entry-sub">${d.lokasi||''} · ${d.tahun_mula}–${d.tahun_tamat||'kini'}</div></div>
+    <button class="btn danger" onclick="padamRekod('sejarah_perkhidmatan',${d.id},'muatSejarah')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
+// ---------- PERKHIDMATAN ----------
+async function tambahPerkhidmatan(){
+  try{
+    const payload = {
+      ikon: document.getElementById('pk_ikon').value,
+      tajuk: document.getElementById('pk_tajuk').value,
+      keterangan: document.getElementById('pk_keterangan').value,
+    };
+    const {error} = await sb.from('perkhidmatan').insert(payload);
+    if(error) throw error;
+    showMsg('msg-perkhidmatan','Perkhidmatan ditambah.');
+    ['pk_ikon','pk_tajuk','pk_keterangan'].forEach(id=>document.getElementById(id).value='');
+    muatPerkhidmatan();
+  }catch(e){ showMsg('msg-perkhidmatan', e.message, false); }
+}
+async function muatPerkhidmatan(){
+  const {data} = await sb.from('perkhidmatan').select('*').order('turutan');
+  const el = document.getElementById('list-perkhidmatan');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.ikon||''} ${d.tajuk}</div><div class="entry-sub">${d.keterangan||''}</div></div>
+    <button class="btn danger" onclick="padamRekod('perkhidmatan',${d.id},'muatPerkhidmatan')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
+// ---------- KURSUS DISERTAI ----------
+async function tambahKursus(){
+  try{
+    const file = document.getElementById('k_fail').files[0];
+    let sijil_url = null;
+    if(file) sijil_url = await uploadFail('sijil', file);
+    const payload = {
+      tajuk: document.getElementById('k_tajuk').value,
+      penganjur: document.getElementById('k_penganjur').value,
+      tahun: parseInt(document.getElementById('k_tahun').value)||null,
+      sijil_url,
+    };
+    const {error} = await sb.from('kursus_disertai').insert(payload);
+    if(error) throw error;
+    showMsg('msg-kursus','Kursus ditambah.');
+    ['k_tajuk','k_penganjur','k_tahun'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('k_fail').value='';
+    muatKursus();
+  }catch(e){ showMsg('msg-kursus', e.message, false); }
+}
+async function muatKursus(){
+  const {data} = await sb.from('kursus_disertai').select('*').order('id',{ascending:false});
+  const el = document.getElementById('list-kursus');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.penganjur||''} · ${d.tahun||''}</div></div>
+    <button class="btn danger" onclick="padamRekod('kursus_disertai',${d.id},'muatKursus')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
+// ---------- SIJIL ----------
+async function tambahSijil(){
+  try{
+    const file = document.getElementById('sj_fail').files[0];
+    let fail_url = null;
+    if(file) fail_url = await uploadFail('sijil', file);
+    const payload = {
+      tajuk: document.getElementById('sj_tajuk').value,
+      pengeluar: document.getElementById('sj_pengeluar').value,
+      tahun: parseInt(document.getElementById('sj_tahun').value)||null,
+      fail_url,
+    };
+    const {error} = await sb.from('sijil').insert(payload);
+    if(error) throw error;
+    showMsg('msg-sijil','Sijil ditambah.');
+    ['sj_tajuk','sj_pengeluar','sj_tahun'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('sj_fail').value='';
+    muatSijilList();
+  }catch(e){ showMsg('msg-sijil', e.message, false); }
+}
+async function muatSijilList(){
+  const {data} = await sb.from('sijil').select('*').order('id',{ascending:false});
+  const el = document.getElementById('list-sijil');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.pengeluar||''} · ${d.tahun||''}</div></div>
+    <button class="btn danger" onclick="padamRekod('sijil',${d.id},'muatSijilList')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
+// ---------- BENGKEL DIKENDALIKAN ----------
+async function tambahBengkel(){
+  try{
+    const sijilFile = document.getElementById('b_sijil_fail').files[0];
+    const gambarFiles = Array.from(document.getElementById('b_gambar_files').files);
+    let sijil_url = null;
+    if(sijilFile) sijil_url = await uploadFail('sijil', sijilFile);
+    let gambar_urls = [];
+    for(const f of gambarFiles){
+      const url = await uploadFail('gambar', f);
+      gambar_urls.push(url);
+    }
+    const payload = {
+      tajuk: document.getElementById('b_tajuk').value,
+      peranan: document.getElementById('b_peranan').value,
+      anjuran: document.getElementById('b_anjuran').value,
+      tarikh: document.getElementById('b_tarikh').value || null,
+      lokasi: document.getElementById('b_lokasi').value,
+      keterangan: document.getElementById('b_keterangan').value,
+      sijil_url,
+      gambar_urls,
+    };
+    const {error} = await sb.from('kursus_dikendalikan').insert(payload);
+    if(error) throw error;
+    showMsg('msg-bengkel','Rekod bengkel ditambah.');
+    ['b_tajuk','b_peranan','b_anjuran','b_tarikh','b_lokasi','b_keterangan'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('b_sijil_fail').value='';
+    document.getElementById('b_gambar_files').value='';
+    muatBengkel();
+  }catch(e){ showMsg('msg-bengkel', e.message, false); }
+}
+async function muatBengkel(){
+  const {data} = await sb.from('kursus_dikendalikan').select('*').order('tarikh',{ascending:false});
+  const el = document.getElementById('list-bengkel');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.peranan||''} · ${d.anjuran||''} · ${d.tarikh||''}</div></div>
+    <button class="btn danger" onclick="padamRekod('kursus_dikendalikan',${d.id},'muatBengkel')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
+// ---------- PADAM (generik) ----------
+async function padamRekod(table, id, refreshFn){
+  if(!confirm('Padam rekod ini?')) return;
+  const {error} = await sb.from(table).delete().eq('id', id);
+  if(error){ alert(error.message); return; }
+  window[refreshFn]();
+}
+
+async function muatSemua(){
+  await muatProfil();
+  await muatSejarah();
+  await muatPerkhidmatan();
+  await muatKursus();
+  await muatSijilList();
+  await muatBengkel();
+}
+
+checkSession();
+</script>
+</body>
+</html>
