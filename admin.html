@@ -77,6 +77,8 @@
       <button class="tab" data-tab="kursus">Kursus</button>
       <button class="tab" data-tab="sijil">Sijil</button>
       <button class="tab" data-tab="bengkel">Bengkel</button>
+      <button class="tab" data-tab="anugerah">Anugerah</button>
+      <button class="tab" data-tab="sumbangan">Sumbangan</button>
     </div>
 
     <!-- PROFIL -->
@@ -195,6 +197,42 @@
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-bengkel"></div>
+    </div>
+
+    <!-- ANUGERAH -->
+    <div class="panel" id="panel-anugerah">
+      <div class="card">
+        <div id="msg-anugerah"></div>
+        <label>Nama Anugerah/Pengiktirafan</label>
+        <input type="text" id="a_tajuk">
+        <label>Dianugerahkan Oleh</label>
+        <input type="text" id="a_pengurniaan">
+        <label>Tahun</label>
+        <input type="number" id="a_tahun">
+        <label>Fail Sijil/Gambar</label>
+        <input type="file" id="a_fail" accept="image/*,application/pdf" capture="environment">
+        <button class="btn" onclick="tambahAnugerah()">Tambah Anugerah</button>
+      </div>
+      <div class="section-label">Senarai Sedia Ada</div>
+      <div id="list-anugerah"></div>
+    </div>
+
+    <!-- SUMBANGAN LAIN -->
+    <div class="panel" id="panel-sumbangan">
+      <div class="card">
+        <div id="msg-sumbangan"></div>
+        <label>Tajuk Sumbangan</label>
+        <input type="text" id="sl_tajuk">
+        <label>Keterangan</label>
+        <textarea id="sl_keterangan"></textarea>
+        <label>Tahun</label>
+        <input type="number" id="sl_tahun">
+        <label>Gambar</label>
+        <input type="file" id="sl_gambar" accept="image/*" capture="environment">
+        <button class="btn" onclick="tambahSumbangan()">Tambah Sumbangan</button>
+      </div>
+      <div class="section-label">Senarai Sedia Ada</div>
+      <div id="list-sumbangan"></div>
     </div>
 
   </div>
@@ -434,6 +472,64 @@ async function muatBengkel(){
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
+// ---------- ANUGERAH ----------
+async function tambahAnugerah(){
+  try{
+    const file = document.getElementById('a_fail').files[0];
+    let fail_url = null;
+    if(file) fail_url = await uploadFail('sijil', file);
+    const payload = {
+      tajuk: document.getElementById('a_tajuk').value,
+      pengurniaan: document.getElementById('a_pengurniaan').value,
+      tahun: parseInt(document.getElementById('a_tahun').value)||null,
+      fail_url,
+    };
+    const {error} = await sb.from('anugerah').insert(payload);
+    if(error) throw error;
+    showMsg('msg-anugerah','Anugerah ditambah.');
+    ['a_tajuk','a_pengurniaan','a_tahun'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('a_fail').value='';
+    muatAnugerah();
+  }catch(e){ showMsg('msg-anugerah', e.message, false); }
+}
+async function muatAnugerah(){
+  const {data} = await sb.from('anugerah').select('*').order('id',{ascending:false});
+  const el = document.getElementById('list-anugerah');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.pengurniaan||''} · ${d.tahun||''}</div></div>
+    <button class="btn danger" onclick="padamRekod('anugerah',${d.id},'muatAnugerah')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
+// ---------- SUMBANGAN LAIN ----------
+async function tambahSumbangan(){
+  try{
+    const file = document.getElementById('sl_gambar').files[0];
+    let gambar_url = null;
+    if(file) gambar_url = await uploadFail('gambar', file);
+    const payload = {
+      tajuk: document.getElementById('sl_tajuk').value,
+      keterangan: document.getElementById('sl_keterangan').value,
+      tahun: parseInt(document.getElementById('sl_tahun').value)||null,
+      gambar_url,
+    };
+    const {error} = await sb.from('sumbangan_lain').insert(payload);
+    if(error) throw error;
+    showMsg('msg-sumbangan','Sumbangan ditambah.');
+    ['sl_tajuk','sl_keterangan','sl_tahun'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('sl_gambar').value='';
+    muatSumbangan();
+  }catch(e){ showMsg('msg-sumbangan', e.message, false); }
+}
+async function muatSumbangan(){
+  const {data} = await sb.from('sumbangan_lain').select('*').order('id',{ascending:false});
+  const el = document.getElementById('list-sumbangan');
+  el.innerHTML = (data||[]).map(d=>`<div class="entry">
+    <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.tahun||''}</div></div>
+    <button class="btn danger" onclick="padamRekod('sumbangan_lain',${d.id},'muatSumbangan')">Padam</button>
+  </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
+}
+
 // ---------- PADAM (generik) ----------
 async function padamRekod(table, id, refreshFn){
   if(!confirm('Padam rekod ini?')) return;
@@ -449,6 +545,8 @@ async function muatSemua(){
   await muatKursus();
   await muatSijilList();
   await muatBengkel();
+  await muatAnugerah();
+  await muatSumbangan();
 }
 
 checkSession();
