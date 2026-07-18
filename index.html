@@ -172,6 +172,8 @@
       <a href="#perkhidmatan">Perkhidmatan</a>
       <a href="#kursus">Kursus &amp; Sijil</a>
       <a href="#bengkel">Bengkel Dikendalikan</a>
+      <a href="#anugerah">Anugerah</a>
+      <a href="#sumbangan">Sumbangan Lain</a>
       <a href="#hubungi">Hubungi</a>
     </div>
   </div>
@@ -264,6 +266,30 @@
       <div id="bengkelList"></div>
     </div>
   </section>
+
+  <hr class="divider">
+
+  <section id="anugerah">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">Pengiktirafan</span>
+        <h2>Anugerah &amp; Pengiktirafan</h2>
+      </div>
+      <div class="grid cols-3" id="anugerahGrid"></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <section id="sumbangan">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">Di luar bilik darjah</span>
+        <h2>Sumbangan Lain</h2>
+      </div>
+      <div class="grid cols-3" id="sumbanganGrid"></div>
+    </div>
+  </section>
 </main>
 
 <footer id="hubungi">
@@ -306,7 +332,9 @@ const DEMO = {
   ],
   kursus_disertai: [],
   sijil: [],
-  kursus_dikendalikan: []
+  kursus_dikendalikan: [],
+  anugerah: [],
+  sumbangan_lain: []
 };
 
 function fmtTahun(m,t){ return t ? (m+' – '+t) : (m+' – kini'); }
@@ -371,6 +399,27 @@ function renderBengkel(list){
   }).join('');
 }
 
+function renderAnugerah(list){
+  const el = document.getElementById('anugerahGrid');
+  if(!list.length){ el.innerHTML = '<div class="empty">Belum ada anugerah/pengiktirafan direkodkan.</div>'; return; }
+  el.innerHTML = list.map(a=>`<div class="card">
+    <span class="icon">🏆</span>
+    <h3>${a.tajuk}</h3>
+    <p>${a.pengurniaan||''}${a.pengurniaan&&a.tahun?' · ':''}${a.tahun||''}</p>
+    ${a.fail_url ? `<a class="li-link" style="display:inline-block; margin-top:12px;" href="${a.fail_url}" target="_blank" rel="noopener">Lihat Sijil</a>` : ''}
+  </div>`).join('');
+}
+
+function renderSumbangan(list){
+  const el = document.getElementById('sumbanganGrid');
+  if(!list.length){ el.innerHTML = '<div class="empty">Belum ada sumbangan lain direkodkan.</div>'; return; }
+  el.innerHTML = list.map(s=>`<div class="card">
+    ${s.gambar_url ? `<img src="${s.gambar_url}" alt="${s.tajuk}" style="width:100%; border-radius:8px; margin-bottom:14px; aspect-ratio:4/3; object-fit:cover;">` : `<span class="icon">✦</span>`}
+    <h3>${s.tajuk}</h3>
+    <p>${s.keterangan||''}${s.tahun?' · '+s.tahun:''}</p>
+  </div>`).join('');
+}
+
 function renderContact(profil){
   const el = document.getElementById('footContact');
   const links = [];
@@ -389,6 +438,8 @@ async function loadData(){
   renderListSection('kursusList', DEMO.kursus_disertai, 'kursus');
   renderListSection('sijilList', DEMO.sijil, 'sijil');
   renderBengkel(DEMO.kursus_dikendalikan);
+  renderAnugerah(DEMO.anugerah);
+  renderSumbangan(DEMO.sumbangan_lain);
 
   if(typeof SUPABASE_URL === 'undefined' || SUPABASE_URL.includes('xxxxxxxxxxxx')) {
     console.log('Supabase belum disambung — memaparkan data demo. Ikut PANDUAN.md untuk sambungkan data sebenar.');
@@ -397,13 +448,15 @@ async function loadData(){
 
   try{
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const [profil, sejarah, perkhidmatan, kursus, sijil, bengkel] = await Promise.all([
+    const [profil, sejarah, perkhidmatan, kursus, sijil, bengkel, anugerah, sumbangan] = await Promise.all([
       sb.from('profil').select('*').single(),
       sb.from('sejarah_perkhidmatan').select('*').order('turutan'),
       sb.from('perkhidmatan').select('*').order('turutan'),
       sb.from('kursus_disertai').select('*').order('turutan', {ascending:false}),
       sb.from('sijil').select('*').order('turutan', {ascending:false}),
       sb.from('kursus_dikendalikan').select('*').order('tarikh', {ascending:false}),
+      sb.from('anugerah').select('*').order('turutan', {ascending:false}),
+      sb.from('sumbangan_lain').select('*').order('turutan', {ascending:false}),
     ]);
     if(profil.data) renderContact(profil.data);
     if(sejarah.data) renderTimeline(sejarah.data);
@@ -411,6 +464,8 @@ async function loadData(){
     if(kursus.data) renderListSection('kursusList', kursus.data, 'kursus');
     if(sijil.data) renderListSection('sijilList', sijil.data, 'sijil');
     if(bengkel.data) renderBengkel(bengkel.data);
+    if(anugerah.data) renderAnugerah(anugerah.data);
+    if(sumbangan.data) renderSumbangan(sumbangan.data);
   }catch(e){
     console.error('Ralat memuatkan data Supabase:', e);
   }
