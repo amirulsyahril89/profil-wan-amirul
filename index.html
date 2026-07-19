@@ -137,6 +137,23 @@
   }
   .li-link:hover{background:var(--teal); color:#fff;}
 
+  /* ---------- BADGE WALL ---------- */
+  .badge-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:18px;}
+  .badge-card{
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 14px; text-align:center; transition:transform .2s, box-shadow .2s;
+  }
+  .badge-card:hover{transform:translateY(-3px); box-shadow:0 12px 28px rgba(122,31,43,0.10);}
+  .badge-icon{
+    width:64px; height:64px; margin:0 auto 12px; border-radius:16px;
+    background:linear-gradient(160deg, var(--teal-tint), #fff); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:1.8rem; overflow:hidden;
+  }
+  .badge-icon img{width:100%; height:100%; object-fit:cover;}
+  .badge-name{font-weight:700; font-size:0.86rem; line-height:1.3; margin-bottom:3px;}
+  .badge-issuer{font-size:0.76rem; color:#6E5B5D;}
+  .badge-link{display:inline-block; margin-top:8px; font-size:0.72rem; font-weight:700; color:var(--teal); text-decoration:none;}
+
   /* ---------- WORKSHOP CARDS ---------- */
   .ws-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-bottom:22px;}
   .ws-photos{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:2px; background:var(--line);}
@@ -171,6 +188,7 @@
       <a href="#kerjaya">Kerjaya</a>
       <a href="#perkhidmatan">Perkhidmatan</a>
       <a href="#kursus">Kursus &amp; Sijil</a>
+      <a href="#badge">Badge</a>
       <a href="#bengkel">Bengkel Dikendalikan</a>
       <a href="#anugerah">Anugerah</a>
       <a href="#sumbangan">Sumbangan Lain</a>
@@ -257,6 +275,18 @@
 
   <hr class="divider">
 
+  <section id="badge">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">Kelayakan digital</span>
+        <h2>Badge Diperolehi</h2>
+      </div>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
   <section id="bengkel">
     <div class="wrap">
       <div class="sec-head">
@@ -334,7 +364,8 @@ const DEMO = {
   sijil: [],
   kursus_dikendalikan: [],
   anugerah: [],
-  sumbangan_lain: []
+  sumbangan_lain: [],
+  badge: []
 };
 
 function fmtTahun(m,t){ return t ? (m+' – '+t) : (m+' – kini'); }
@@ -420,6 +451,17 @@ function renderSumbangan(list){
   </div>`).join('');
 }
 
+function renderBadge(list){
+  const el = document.getElementById('badgeGrid');
+  if(!list.length){ el.innerHTML = '<div class="empty">Belum ada badge direkodkan.</div>'; return; }
+  el.innerHTML = list.map(b=>`<div class="badge-card">
+    <div class="badge-icon">${b.gambar_url ? `<img src="${b.gambar_url}" alt="${b.nama_badge}">` : '🏵️'}</div>
+    <div class="badge-name">${b.nama_badge}</div>
+    <div class="badge-issuer">${b.pengeluar||''}</div>
+    ${b.pautan_pengesahan ? `<a class="badge-link" href="${b.pautan_pengesahan}" target="_blank" rel="noopener">Sahkan →</a>` : ''}
+  </div>`).join('');
+}
+
 function renderContact(profil){
   const el = document.getElementById('footContact');
   const links = [];
@@ -440,6 +482,7 @@ async function loadData(){
   renderBengkel(DEMO.kursus_dikendalikan);
   renderAnugerah(DEMO.anugerah);
   renderSumbangan(DEMO.sumbangan_lain);
+  renderBadge(DEMO.badge);
 
   if(typeof SUPABASE_URL === 'undefined' || SUPABASE_URL.includes('xxxxxxxxxxxx')) {
     console.log('Supabase belum disambung — memaparkan data demo. Ikut PANDUAN.md untuk sambungkan data sebenar.');
@@ -448,7 +491,7 @@ async function loadData(){
 
   try{
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const [profil, sejarah, perkhidmatan, kursus, sijil, bengkel, anugerah, sumbangan] = await Promise.all([
+    const [profil, sejarah, perkhidmatan, kursus, sijil, bengkel, anugerah, sumbangan, badge] = await Promise.all([
       sb.from('profil').select('*').single(),
       sb.from('sejarah_perkhidmatan').select('*').order('turutan'),
       sb.from('perkhidmatan').select('*').order('turutan'),
@@ -457,6 +500,7 @@ async function loadData(){
       sb.from('kursus_dikendalikan').select('*').order('tarikh', {ascending:false}),
       sb.from('anugerah').select('*').order('turutan', {ascending:false}),
       sb.from('sumbangan_lain').select('*').order('turutan', {ascending:false}),
+      sb.from('badge').select('*').order('turutan', {ascending:false}),
     ]);
     if(profil.data) renderContact(profil.data);
     if(sejarah.data) renderTimeline(sejarah.data);
@@ -466,6 +510,7 @@ async function loadData(){
     if(bengkel.data) renderBengkel(bengkel.data);
     if(anugerah.data) renderAnugerah(anugerah.data);
     if(sumbangan.data) renderSumbangan(sumbangan.data);
+    if(badge.data) renderBadge(badge.data);
   }catch(e){
     console.error('Ralat memuatkan data Supabase:', e);
   }
