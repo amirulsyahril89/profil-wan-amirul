@@ -370,8 +370,8 @@ document.querySelectorAll('.navlinks a').forEach(a=>a.addEventListener('click', 
 const DEMO = {
   profil: { nama:'Wan Amirul Syahril Bin Wan Mazlan', emel:'', telefon:'' },
   sejarah: [
-    {institusi:'SJK Sungai Jaong', lokasi:'Marudi, Sarawak', tahun_mula:2013, tahun_tamat:2021},
-    {institusi:'SK Bohor Baharu', lokasi:'Bandar Bera, Pahang', tahun_mula:2022, tahun_tamat:null}
+    {institusi:'SK Bohor Baharu', lokasi:'Bandar Bera, Pahang', tahun_mula:2022, tahun_tamat:null},
+    {institusi:'SJK Sungai Jaong', lokasi:'Marudi, Sarawak', tahun_mula:2013, tahun_tamat:2021}
   ],
   perkhidmatan: [
     {ikon:'📖', tajuk:'Pengajaran Pendidikan Islam', keterangan:'Pengajaran & pemantapan kurikulum Pendidikan Islam sekolah rendah.'},
@@ -532,14 +532,14 @@ async function loadData(){
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const [profil, sejarah, perkhidmatan, kursus, sijil, bengkel, anugerah, sumbangan, badge] = await Promise.all([
       sb.from('profil').select('*').single(),
-      sb.from('sejarah_perkhidmatan').select('*').order('turutan'),
+      sb.from('sejarah_perkhidmatan').select('*').order('tahun_mula', {ascending:false}),
       sb.from('perkhidmatan').select('*').order('turutan'),
-      sb.from('kursus_disertai').select('*').order('turutan', {ascending:false}),
-      sb.from('sijil').select('*').order('turutan', {ascending:false}),
-      sb.from('kursus_dikendalikan').select('*').order('tarikh', {ascending:false}),
-      sb.from('anugerah').select('*').order('turutan', {ascending:false}),
-      sb.from('sumbangan_lain').select('*').order('turutan', {ascending:false}),
-      sb.from('badge').select('*').order('turutan', {ascending:false}),
+      sb.from('kursus_disertai').select('*').order('tahun', {ascending:false, nullsFirst:false}),
+      sb.from('sijil').select('*').order('tahun', {ascending:false, nullsFirst:false}),
+      sb.from('kursus_dikendalikan').select('*').order('tarikh', {ascending:false, nullsFirst:false}),
+      sb.from('anugerah').select('*').order('tahun', {ascending:false, nullsFirst:false}),
+      sb.from('sumbangan_lain').select('*').order('tahun', {ascending:false, nullsFirst:false}),
+      sb.from('badge').select('*').order('tarikh', {ascending:false, nullsFirst:false}),
     ]);
     if(profil.data) renderContact(profil.data);
     if(sejarah.data) renderTimeline(sejarah.data);
