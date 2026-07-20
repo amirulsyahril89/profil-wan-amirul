@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wan Amirul Syahril — Guru Peneraju Generasi Digital</title>
+<title>Wan Amirul Syahril — Portfolio Digital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -163,6 +163,24 @@
   .ws-title{font-family:var(--display); font-size:1.15rem; font-weight:600; margin-bottom:6px;}
   .ws-meta{font-size:0.85rem; color:#6E5B5D; margin-bottom:10px;}
   .ws-desc{font-size:0.92rem; color:#4A3638; margin-bottom:14px;}
+
+  /* ---------- LIHAT LAGI ---------- */
+  .lihat-lagi{
+    display:block; margin:20px auto 0; padding:10px 24px; border-radius:99px;
+    border:1px solid var(--line); background:#fff; color:var(--teal); font-weight:700;
+    font-size:0.86rem; cursor:pointer; font-family:var(--body);
+  }
+  .lihat-lagi:hover{background:var(--teal-tint);}
+  .grid .lihat-lagi, .badge-grid .lihat-lagi{grid-column:1/-1;}
+
+  /* ---------- LIHAT LAGI ---------- */
+  .lihat-lagi-btn{
+    display:block; margin:22px auto 0; padding:11px 26px; border-radius:99px;
+    border:1px solid var(--teal); background:#fff; color:var(--teal); font-weight:700;
+    font-size:0.85rem; cursor:pointer; font-family:var(--body); transition:background .2s, color .2s;
+  }
+  .lihat-lagi-btn:hover{background:var(--teal); color:#fff;}
+  .grid .lihat-lagi-btn, .badge-grid .lihat-lagi-btn{grid-column:1 / -1;}
 
   /* ---------- EMPTY STATE ---------- */
   .empty{padding:32px; text-align:center; color:#8A7678; font-size:0.92rem; border:1px dashed var(--line); border-radius:var(--radius);}
@@ -370,6 +388,22 @@ const DEMO = {
 
 function fmtTahun(m,t){ return t ? (m+' – '+t) : (m+' – kini'); }
 
+// ---------- LIHAT LAGI (generik) ----------
+function bungkusLihatLagi(containerId, itemsHtmlArr, limit, gridMode){
+  const visible = itemsHtmlArr.slice(0, limit).join('');
+  const rest = itemsHtmlArr.slice(limit);
+  if(!rest.length) return visible;
+  const displayVal = gridMode ? 'contents' : 'block';
+  return visible +
+    `<div id="${containerId}-more" style="display:none" data-display="${displayVal}">${rest.join('')}</div>` +
+    `<button class="lihat-lagi-btn" id="${containerId}-btn" onclick="lihatLagi('${containerId}')">Lihat ${rest.length} Lagi ↓</button>`;
+}
+function lihatLagi(containerId){
+  const more = document.getElementById(containerId+'-more');
+  more.style.display = more.dataset.display;
+  document.getElementById(containerId+'-btn').style.display = 'none';
+}
+
 function renderTimeline(list){
   const el = document.getElementById('timelineList');
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada rekod sejarah perkhidmatan.</div>'; return; }
@@ -397,7 +431,7 @@ function renderPerkhidmatan(list){
 function renderListSection(elId, list, kind){
   const el = document.getElementById(elId);
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada rekod ditambah.</div>'; return; }
-  el.innerHTML = list.map(item=>{
+  const itemsHtml = list.map(item=>{
     const link = kind==='kursus' ? item.sijil_url : item.fail_url;
     const sub = kind==='kursus' ? item.penganjur : item.pengeluar;
     return `<div class="list-item">
@@ -408,13 +442,14 @@ function renderListSection(elId, list, kind){
       <div class="li-year">${item.tahun||''}</div>
       ${link ? `<a class="li-link" href="${link}" target="_blank" rel="noopener">Lihat Sijil</a>` : ''}
     </div>`;
-  }).join('');
+  });
+  el.innerHTML = bungkusLihatLagi(elId, itemsHtml, 5, false);
 }
 
 function renderBengkel(list){
   const el = document.getElementById('bengkelList');
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada kursus/bengkel dikendalikan direkodkan.</div>'; return; }
-  el.innerHTML = list.map(w=>{
+  const itemsHtml = list.map(w=>{
     const photos = (w.gambar_urls||[]).map(u=>`<img src="${u}" alt="${w.tajuk}">`).join('');
     const tarikh = w.tarikh ? new Date(w.tarikh).toLocaleDateString('ms-MY', {year:'numeric', month:'long', day:'numeric'}) : '';
     return `<div class="ws-card">
@@ -427,39 +462,43 @@ function renderBengkel(list){
         ${w.sijil_url ? `<a class="li-link" href="${w.sijil_url}" target="_blank" rel="noopener">Lihat Sijil</a>` : ''}
       </div>
     </div>`;
-  }).join('');
+  });
+  el.innerHTML = bungkusLihatLagi('bengkelList', itemsHtml, 3, false);
 }
 
 function renderAnugerah(list){
   const el = document.getElementById('anugerahGrid');
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada anugerah/pengiktirafan direkodkan.</div>'; return; }
-  el.innerHTML = list.map(a=>`<div class="card">
+  const itemsHtml = list.map(a=>`<div class="card">
     <span class="icon">🏆</span>
     <h3>${a.tajuk}</h3>
     <p>${a.pengurniaan||''}${a.pengurniaan&&a.tahun?' · ':''}${a.tahun||''}</p>
     ${a.fail_url ? `<a class="li-link" style="display:inline-block; margin-top:12px;" href="${a.fail_url}" target="_blank" rel="noopener">Lihat Sijil</a>` : ''}
-  </div>`).join('');
+  </div>`);
+  el.innerHTML = bungkusLihatLagi('anugerahGrid', itemsHtml, 6, true);
 }
 
 function renderSumbangan(list){
   const el = document.getElementById('sumbanganGrid');
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada sumbangan lain direkodkan.</div>'; return; }
-  el.innerHTML = list.map(s=>`<div class="card">
+  const itemsHtml = list.map(s=>`<div class="card">
     ${s.gambar_url ? `<img src="${s.gambar_url}" alt="${s.tajuk}" style="width:100%; border-radius:8px; margin-bottom:14px; aspect-ratio:4/3; object-fit:cover;">` : `<span class="icon">✦</span>`}
     <h3>${s.tajuk}</h3>
     <p>${s.keterangan||''}${s.tahun?' · '+s.tahun:''}</p>
-  </div>`).join('');
+  </div>`);
+  el.innerHTML = bungkusLihatLagi('sumbanganGrid', itemsHtml, 6, true);
 }
 
 function renderBadge(list){
   const el = document.getElementById('badgeGrid');
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada badge direkodkan.</div>'; return; }
-  el.innerHTML = list.map(b=>`<div class="badge-card">
+  const itemsHtml = list.map(b=>`<div class="badge-card">
     <div class="badge-icon">${b.gambar_url ? `<img src="${b.gambar_url}" alt="${b.nama_badge}">` : '🏵️'}</div>
     <div class="badge-name">${b.nama_badge}</div>
     <div class="badge-issuer">${b.pengeluar||''}</div>
     ${b.pautan_pengesahan ? `<a class="badge-link" href="${b.pautan_pengesahan}" target="_blank" rel="noopener">Sahkan →</a>` : ''}
-  </div>`).join('');
+  </div>`);
+  el.innerHTML = bungkusLihatLagi('badgeGrid', itemsHtml, 8, true);
 }
 
 function renderContact(profil){
