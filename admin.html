@@ -99,7 +99,7 @@
         <label>Telefon</label>
         <input type="text" id="p_telefon">
         <label>Gambar Profil</label>
-        <input type="file" id="p_gambar_file" accept="image/*" capture="user">
+        <input type="file" id="p_gambar_file" accept="image/*">
         <button class="btn" onclick="simpanProfil()">Simpan Profil</button>
       </div>
     </div>
@@ -170,7 +170,7 @@
         <label>Tarikh</label>
         <input type="date" id="bd_tarikh">
         <label>Gambar/Ikon Badge</label>
-        <input type="file" id="bd_gambar" accept="image/*" capture="environment">
+        <input type="file" id="bd_gambar" accept="image/*">
         <label>Pautan Pengesahan (jika ada)</label>
         <input type="text" id="bd_pautan" placeholder="https://credly.com/...">
         <button class="btn" id="btn-badge" onclick="simpanBadge()">Tambah Badge</button>
@@ -218,7 +218,7 @@
         <label>Fail Sijil</label>
         <input type="file" id="b_sijil_fail" accept="image/*,application/pdf">
         <label>Gambar (boleh pilih beberapa sekaligus)</label>
-        <input type="file" id="b_gambar_files" accept="image/*" capture="environment" multiple>
+        <input type="file" id="b_gambar_files" accept="image/*" multiple>
         <button class="btn" id="btn-bengkel" onclick="simpanBengkel()">Tambah Rekod Bengkel</button>
         <button class="btn secondary" id="batal-bengkel" style="display:none" onclick="batalEditBengkel()">Batal Edit</button>
       </div>
@@ -256,7 +256,7 @@
         <label>Tahun</label>
         <input type="number" id="sl_tahun">
         <label>Gambar</label>
-        <input type="file" id="sl_gambar" accept="image/*" capture="environment">
+        <input type="file" id="sl_gambar" accept="image/*">
         <button class="btn" id="btn-sumbangan" onclick="simpanSumbangan()">Tambah Sumbangan</button>
         <button class="btn secondary" id="batal-sumbangan" style="display:none" onclick="batalEditSumbangan()">Batal Edit</button>
       </div>
