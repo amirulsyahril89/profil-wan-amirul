@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Admin — Kemaskini Profil</title>
+<title>Panel Admin — Kemaskini Portfolio Digital</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -116,7 +116,8 @@
           <div><label>Tahun Mula</label><input type="number" id="s_mula" placeholder="2022"></div>
           <div><label>Tahun Tamat</label><input type="number" id="s_tamat" placeholder="kosongkan jika semasa"></div>
         </div>
-        <button class="btn" onclick="tambahSejarah()">Tambah Rekod</button>
+        <button class="btn" id="btn-sejarah" onclick="simpanSejarah()">Tambah Rekod</button>
+        <button class="btn secondary" id="batal-sejarah" style="display:none" onclick="batalEditSejarah()">Batal Edit</button>
       </div>
       <div class="section-label">Rekod Sedia Ada</div>
       <div id="list-sejarah"></div>
@@ -132,7 +133,8 @@
         <input type="text" id="pk_tajuk">
         <label>Keterangan</label>
         <textarea id="pk_keterangan"></textarea>
-        <button class="btn" onclick="tambahPerkhidmatan()">Tambah Perkhidmatan</button>
+        <button class="btn" id="btn-perkhidmatan" onclick="simpanPerkhidmatan()">Tambah Perkhidmatan</button>
+        <button class="btn secondary" id="batal-perkhidmatan" style="display:none" onclick="batalEditPerkhidmatan()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-perkhidmatan"></div>
@@ -150,7 +152,8 @@
         <input type="number" id="k_tahun">
         <label>Fail Sijil (PDF/Gambar)</label>
         <input type="file" id="k_fail" accept="image/*,application/pdf" capture="environment">
-        <button class="btn" onclick="tambahKursus()">Tambah Kursus</button>
+        <button class="btn" id="btn-kursus" onclick="simpanKursus()">Tambah Kursus</button>
+        <button class="btn secondary" id="batal-kursus" style="display:none" onclick="batalEditKursus()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-kursus"></div>
@@ -170,7 +173,8 @@
         <input type="file" id="bd_gambar" accept="image/*" capture="environment">
         <label>Pautan Pengesahan (jika ada)</label>
         <input type="text" id="bd_pautan" placeholder="https://credly.com/...">
-        <button class="btn" onclick="tambahBadge()">Tambah Badge</button>
+        <button class="btn" id="btn-badge" onclick="simpanBadge()">Tambah Badge</button>
+        <button class="btn secondary" id="batal-badge" style="display:none" onclick="batalEditBadge()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-badge"></div>
@@ -188,7 +192,8 @@
         <input type="number" id="sj_tahun">
         <label>Fail Sijil</label>
         <input type="file" id="sj_fail" accept="image/*,application/pdf" capture="environment">
-        <button class="btn" onclick="tambahSijil()">Tambah Sijil</button>
+        <button class="btn" id="btn-sijil" onclick="simpanSijil()">Tambah Sijil</button>
+        <button class="btn secondary" id="batal-sijil" style="display:none" onclick="batalEditSijil()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-sijil"></div>
@@ -214,7 +219,8 @@
         <input type="file" id="b_sijil_fail" accept="image/*,application/pdf" capture="environment">
         <label>Gambar (boleh pilih beberapa sekaligus)</label>
         <input type="file" id="b_gambar_files" accept="image/*" capture="environment" multiple>
-        <button class="btn" onclick="tambahBengkel()">Tambah Rekod Bengkel</button>
+        <button class="btn" id="btn-bengkel" onclick="simpanBengkel()">Tambah Rekod Bengkel</button>
+        <button class="btn secondary" id="batal-bengkel" style="display:none" onclick="batalEditBengkel()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-bengkel"></div>
@@ -232,7 +238,8 @@
         <input type="number" id="a_tahun">
         <label>Fail Sijil/Gambar</label>
         <input type="file" id="a_fail" accept="image/*,application/pdf" capture="environment">
-        <button class="btn" onclick="tambahAnugerah()">Tambah Anugerah</button>
+        <button class="btn" id="btn-anugerah" onclick="simpanAnugerah()">Tambah Anugerah</button>
+        <button class="btn secondary" id="batal-anugerah" style="display:none" onclick="batalEditAnugerah()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-anugerah"></div>
@@ -250,7 +257,8 @@
         <input type="number" id="sl_tahun">
         <label>Gambar</label>
         <input type="file" id="sl_gambar" accept="image/*" capture="environment">
-        <button class="btn" onclick="tambahSumbangan()">Tambah Sumbangan</button>
+        <button class="btn" id="btn-sumbangan" onclick="simpanSumbangan()">Tambah Sumbangan</button>
+        <button class="btn secondary" id="batal-sumbangan" style="display:none" onclick="batalEditSumbangan()">Batal Edit</button>
       </div>
       <div class="section-label">Senarai Sedia Ada</div>
       <div id="list-sumbangan"></div>
@@ -314,6 +322,24 @@ async function uploadFail(bucket, file){
   return urlData.publicUrl;
 }
 
+// ---------- EDIT STATE (generik untuk semua bahagian) ----------
+const EDIT_ID = {};
+const CACHE = {};
+function masukModeEdit(section, id, labelSimpan){
+  EDIT_ID[section] = id;
+  document.getElementById('btn-'+section).textContent = labelSimpan;
+  document.getElementById('batal-'+section).style.display = 'block';
+  document.getElementById('panel-'+section).scrollIntoView({behavior:'smooth', block:'start'});
+}
+function keluarModeEdit(section, labelTambah){
+  EDIT_ID[section] = null;
+  document.getElementById('btn-'+section).textContent = labelTambah;
+  document.getElementById('batal-'+section).style.display = 'none';
+}
+function cariRekod(section, id){
+  return (CACHE[section]||[]).find(d => d.id === id);
+}
+
 // ---------- PROFIL ----------
 async function muatProfil(){
   const {data} = await sb.from('profil').select('*').single();
@@ -347,7 +373,7 @@ async function simpanProfil(){
 }
 
 // ---------- SEJARAH ----------
-async function tambahSejarah(){
+async function simpanSejarah(){
   try{
     const payload = {
       institusi: document.getElementById('s_institusi').value,
@@ -355,51 +381,97 @@ async function tambahSejarah(){
       tahun_mula: parseInt(document.getElementById('s_mula').value)||null,
       tahun_tamat: parseInt(document.getElementById('s_tamat').value)||null,
     };
-    const {error} = await sb.from('sejarah_perkhidmatan').insert(payload);
+    let error;
+    if(EDIT_ID.sejarah){
+      ({error} = await sb.from('sejarah_perkhidmatan').update(payload).eq('id', EDIT_ID.sejarah));
+    } else {
+      ({error} = await sb.from('sejarah_perkhidmatan').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-sejarah','Rekod ditambah.');
+    showMsg('msg-sejarah', EDIT_ID.sejarah ? 'Rekod dikemaskini.' : 'Rekod ditambah.');
     ['s_institusi','s_lokasi','s_mula','s_tamat'].forEach(id=>document.getElementById(id).value='');
+    keluarModeEdit('sejarah','Tambah Rekod');
     muatSejarah();
   }catch(e){ showMsg('msg-sejarah', e.message, false); }
 }
+function editSejarah(id){
+  const d = cariRekod('sejarah', id);
+  if(!d) return;
+  document.getElementById('s_institusi').value = d.institusi||'';
+  document.getElementById('s_lokasi').value = d.lokasi||'';
+  document.getElementById('s_mula').value = d.tahun_mula||'';
+  document.getElementById('s_tamat').value = d.tahun_tamat||'';
+  masukModeEdit('sejarah', id, 'Simpan Perubahan');
+}
+function batalEditSejarah(){
+  ['s_institusi','s_lokasi','s_mula','s_tamat'].forEach(id=>document.getElementById(id).value='');
+  keluarModeEdit('sejarah','Tambah Rekod');
+}
 async function muatSejarah(){
   const {data} = await sb.from('sejarah_perkhidmatan').select('*').order('turutan');
+  CACHE.sejarah = data||[];
   const el = document.getElementById('list-sejarah');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.institusi}</div><div class="entry-sub">${d.lokasi||''} · ${d.tahun_mula}–${d.tahun_tamat||'kini'}</div></div>
-    <button class="btn danger" onclick="padamRekod('sejarah_perkhidmatan',${d.id},'muatSejarah')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editSejarah(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('sejarah_perkhidmatan',${d.id},'muatSejarah')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- PERKHIDMATAN ----------
-async function tambahPerkhidmatan(){
+async function simpanPerkhidmatan(){
   try{
     const payload = {
       ikon: document.getElementById('pk_ikon').value,
       tajuk: document.getElementById('pk_tajuk').value,
       keterangan: document.getElementById('pk_keterangan').value,
     };
-    const {error} = await sb.from('perkhidmatan').insert(payload);
+    let error;
+    if(EDIT_ID.perkhidmatan){
+      ({error} = await sb.from('perkhidmatan').update(payload).eq('id', EDIT_ID.perkhidmatan));
+    } else {
+      ({error} = await sb.from('perkhidmatan').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-perkhidmatan','Perkhidmatan ditambah.');
+    showMsg('msg-perkhidmatan', EDIT_ID.perkhidmatan ? 'Perkhidmatan dikemaskini.' : 'Perkhidmatan ditambah.');
     ['pk_ikon','pk_tajuk','pk_keterangan'].forEach(id=>document.getElementById(id).value='');
+    keluarModeEdit('perkhidmatan','Tambah Perkhidmatan');
     muatPerkhidmatan();
   }catch(e){ showMsg('msg-perkhidmatan', e.message, false); }
 }
+function editPerkhidmatan(id){
+  const d = cariRekod('perkhidmatan', id);
+  if(!d) return;
+  document.getElementById('pk_ikon').value = d.ikon||'';
+  document.getElementById('pk_tajuk').value = d.tajuk||'';
+  document.getElementById('pk_keterangan').value = d.keterangan||'';
+  masukModeEdit('perkhidmatan', id, 'Simpan Perubahan');
+}
+function batalEditPerkhidmatan(){
+  ['pk_ikon','pk_tajuk','pk_keterangan'].forEach(id=>document.getElementById(id).value='');
+  keluarModeEdit('perkhidmatan','Tambah Perkhidmatan');
+}
 async function muatPerkhidmatan(){
   const {data} = await sb.from('perkhidmatan').select('*').order('turutan');
+  CACHE.perkhidmatan = data||[];
   const el = document.getElementById('list-perkhidmatan');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.ikon||''} ${d.tajuk}</div><div class="entry-sub">${d.keterangan||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('perkhidmatan',${d.id},'muatPerkhidmatan')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editPerkhidmatan(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('perkhidmatan',${d.id},'muatPerkhidmatan')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- BADGE ----------
-async function tambahBadge(){
+async function simpanBadge(){
   try{
     const file = document.getElementById('bd_gambar').files[0];
-    let gambar_url = null;
+    const existing = EDIT_ID.badge ? cariRekod('badge', EDIT_ID.badge) : null;
+    let gambar_url = existing ? existing.gambar_url : null;
     if(file) gambar_url = await uploadFail('gambar', file);
     const payload = {
       nama_badge: document.getElementById('bd_nama').value,
@@ -408,28 +480,53 @@ async function tambahBadge(){
       gambar_url,
       pautan_pengesahan: document.getElementById('bd_pautan').value,
     };
-    const {error} = await sb.from('badge').insert(payload);
+    let error;
+    if(EDIT_ID.badge){
+      ({error} = await sb.from('badge').update(payload).eq('id', EDIT_ID.badge));
+    } else {
+      ({error} = await sb.from('badge').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-badge','Badge ditambah.');
+    showMsg('msg-badge', EDIT_ID.badge ? 'Badge dikemaskini.' : 'Badge ditambah.');
     ['bd_nama','bd_pengeluar','bd_tarikh','bd_pautan'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('bd_gambar').value='';
+    keluarModeEdit('badge','Tambah Badge');
     muatBadge();
   }catch(e){ showMsg('msg-badge', e.message, false); }
 }
+function editBadge(id){
+  const d = cariRekod('badge', id);
+  if(!d) return;
+  document.getElementById('bd_nama').value = d.nama_badge||'';
+  document.getElementById('bd_pengeluar').value = d.pengeluar||'';
+  document.getElementById('bd_tarikh').value = d.tarikh||'';
+  document.getElementById('bd_pautan').value = d.pautan_pengesahan||'';
+  masukModeEdit('badge', id, 'Simpan Perubahan');
+}
+function batalEditBadge(){
+  ['bd_nama','bd_pengeluar','bd_tarikh','bd_pautan'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('bd_gambar').value='';
+  keluarModeEdit('badge','Tambah Badge');
+}
 async function muatBadge(){
   const {data} = await sb.from('badge').select('*').order('id',{ascending:false});
+  CACHE.badge = data||[];
   const el = document.getElementById('list-badge');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.nama_badge}</div><div class="entry-sub">${d.pengeluar||''} · ${d.tarikh||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('badge',${d.id},'muatBadge')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editBadge(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('badge',${d.id},'muatBadge')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- KURSUS DISERTAI ----------
-async function tambahKursus(){
+async function simpanKursus(){
   try{
     const file = document.getElementById('k_fail').files[0];
-    let sijil_url = null;
+    const existing = EDIT_ID.kursus ? cariRekod('kursus', EDIT_ID.kursus) : null;
+    let sijil_url = existing ? existing.sijil_url : null;
     if(file) sijil_url = await uploadFail('sijil', file);
     const payload = {
       tajuk: document.getElementById('k_tajuk').value,
@@ -437,28 +534,52 @@ async function tambahKursus(){
       tahun: parseInt(document.getElementById('k_tahun').value)||null,
       sijil_url,
     };
-    const {error} = await sb.from('kursus_disertai').insert(payload);
+    let error;
+    if(EDIT_ID.kursus){
+      ({error} = await sb.from('kursus_disertai').update(payload).eq('id', EDIT_ID.kursus));
+    } else {
+      ({error} = await sb.from('kursus_disertai').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-kursus','Kursus ditambah.');
+    showMsg('msg-kursus', EDIT_ID.kursus ? 'Kursus dikemaskini.' : 'Kursus ditambah.');
     ['k_tajuk','k_penganjur','k_tahun'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('k_fail').value='';
+    keluarModeEdit('kursus','Tambah Kursus');
     muatKursus();
   }catch(e){ showMsg('msg-kursus', e.message, false); }
 }
+function editKursus(id){
+  const d = cariRekod('kursus', id);
+  if(!d) return;
+  document.getElementById('k_tajuk').value = d.tajuk||'';
+  document.getElementById('k_penganjur').value = d.penganjur||'';
+  document.getElementById('k_tahun').value = d.tahun||'';
+  masukModeEdit('kursus', id, 'Simpan Perubahan');
+}
+function batalEditKursus(){
+  ['k_tajuk','k_penganjur','k_tahun'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('k_fail').value='';
+  keluarModeEdit('kursus','Tambah Kursus');
+}
 async function muatKursus(){
   const {data} = await sb.from('kursus_disertai').select('*').order('id',{ascending:false});
+  CACHE.kursus = data||[];
   const el = document.getElementById('list-kursus');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.penganjur||''} · ${d.tahun||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('kursus_disertai',${d.id},'muatKursus')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editKursus(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('kursus_disertai',${d.id},'muatKursus')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- SIJIL ----------
-async function tambahSijil(){
+async function simpanSijil(){
   try{
     const file = document.getElementById('sj_fail').files[0];
-    let fail_url = null;
+    const existing = EDIT_ID.sijil ? cariRekod('sijil', EDIT_ID.sijil) : null;
+    let fail_url = existing ? existing.fail_url : null;
     if(file) fail_url = await uploadFail('sijil', file);
     const payload = {
       tajuk: document.getElementById('sj_tajuk').value,
@@ -466,34 +587,61 @@ async function tambahSijil(){
       tahun: parseInt(document.getElementById('sj_tahun').value)||null,
       fail_url,
     };
-    const {error} = await sb.from('sijil').insert(payload);
+    let error;
+    if(EDIT_ID.sijil){
+      ({error} = await sb.from('sijil').update(payload).eq('id', EDIT_ID.sijil));
+    } else {
+      ({error} = await sb.from('sijil').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-sijil','Sijil ditambah.');
+    showMsg('msg-sijil', EDIT_ID.sijil ? 'Sijil dikemaskini.' : 'Sijil ditambah.');
     ['sj_tajuk','sj_pengeluar','sj_tahun'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('sj_fail').value='';
+    keluarModeEdit('sijil','Tambah Sijil');
     muatSijilList();
   }catch(e){ showMsg('msg-sijil', e.message, false); }
 }
+function editSijil(id){
+  const d = cariRekod('sijil', id);
+  if(!d) return;
+  document.getElementById('sj_tajuk').value = d.tajuk||'';
+  document.getElementById('sj_pengeluar').value = d.pengeluar||'';
+  document.getElementById('sj_tahun').value = d.tahun||'';
+  masukModeEdit('sijil', id, 'Simpan Perubahan');
+}
+function batalEditSijil(){
+  ['sj_tajuk','sj_pengeluar','sj_tahun'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sj_fail').value='';
+  keluarModeEdit('sijil','Tambah Sijil');
+}
 async function muatSijilList(){
   const {data} = await sb.from('sijil').select('*').order('id',{ascending:false});
+  CACHE.sijil = data||[];
   const el = document.getElementById('list-sijil');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.pengeluar||''} · ${d.tahun||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('sijil',${d.id},'muatSijilList')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editSijil(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('sijil',${d.id},'muatSijilList')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- BENGKEL DIKENDALIKAN ----------
-async function tambahBengkel(){
+async function simpanBengkel(){
   try{
     const sijilFile = document.getElementById('b_sijil_fail').files[0];
     const gambarFiles = Array.from(document.getElementById('b_gambar_files').files);
-    let sijil_url = null;
+    const existing = EDIT_ID.bengkel ? cariRekod('bengkel', EDIT_ID.bengkel) : null;
+    let sijil_url = existing ? existing.sijil_url : null;
     if(sijilFile) sijil_url = await uploadFail('sijil', sijilFile);
-    let gambar_urls = [];
-    for(const f of gambarFiles){
-      const url = await uploadFail('gambar', f);
-      gambar_urls.push(url);
+    let gambar_urls = existing ? (existing.gambar_urls||[]) : [];
+    if(gambarFiles.length){
+      gambar_urls = [];
+      for(const f of gambarFiles){
+        const url = await uploadFail('gambar', f);
+        gambar_urls.push(url);
+      }
     }
     const payload = {
       tajuk: document.getElementById('b_tajuk').value,
@@ -505,29 +653,57 @@ async function tambahBengkel(){
       sijil_url,
       gambar_urls,
     };
-    const {error} = await sb.from('kursus_dikendalikan').insert(payload);
+    let error;
+    if(EDIT_ID.bengkel){
+      ({error} = await sb.from('kursus_dikendalikan').update(payload).eq('id', EDIT_ID.bengkel));
+    } else {
+      ({error} = await sb.from('kursus_dikendalikan').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-bengkel','Rekod bengkel ditambah.');
+    showMsg('msg-bengkel', EDIT_ID.bengkel ? 'Rekod bengkel dikemaskini.' : 'Rekod bengkel ditambah.');
     ['b_tajuk','b_peranan','b_anjuran','b_tarikh','b_lokasi','b_keterangan'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('b_sijil_fail').value='';
     document.getElementById('b_gambar_files').value='';
+    keluarModeEdit('bengkel','Tambah Rekod Bengkel');
     muatBengkel();
   }catch(e){ showMsg('msg-bengkel', e.message, false); }
 }
+function editBengkel(id){
+  const d = cariRekod('bengkel', id);
+  if(!d) return;
+  document.getElementById('b_tajuk').value = d.tajuk||'';
+  document.getElementById('b_peranan').value = d.peranan||'';
+  document.getElementById('b_anjuran').value = d.anjuran||'';
+  document.getElementById('b_tarikh').value = d.tarikh||'';
+  document.getElementById('b_lokasi').value = d.lokasi||'';
+  document.getElementById('b_keterangan').value = d.keterangan||'';
+  masukModeEdit('bengkel', id, 'Simpan Perubahan');
+}
+function batalEditBengkel(){
+  ['b_tajuk','b_peranan','b_anjuran','b_tarikh','b_lokasi','b_keterangan'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('b_sijil_fail').value='';
+  document.getElementById('b_gambar_files').value='';
+  keluarModeEdit('bengkel','Tambah Rekod Bengkel');
+}
 async function muatBengkel(){
   const {data} = await sb.from('kursus_dikendalikan').select('*').order('tarikh',{ascending:false});
+  CACHE.bengkel = data||[];
   const el = document.getElementById('list-bengkel');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.peranan||''} · ${d.anjuran||''} · ${d.tarikh||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('kursus_dikendalikan',${d.id},'muatBengkel')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editBengkel(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('kursus_dikendalikan',${d.id},'muatBengkel')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- ANUGERAH ----------
-async function tambahAnugerah(){
+async function simpanAnugerah(){
   try{
     const file = document.getElementById('a_fail').files[0];
-    let fail_url = null;
+    const existing = EDIT_ID.anugerah ? cariRekod('anugerah', EDIT_ID.anugerah) : null;
+    let fail_url = existing ? existing.fail_url : null;
     if(file) fail_url = await uploadFail('sijil', file);
     const payload = {
       tajuk: document.getElementById('a_tajuk').value,
@@ -535,28 +711,52 @@ async function tambahAnugerah(){
       tahun: parseInt(document.getElementById('a_tahun').value)||null,
       fail_url,
     };
-    const {error} = await sb.from('anugerah').insert(payload);
+    let error;
+    if(EDIT_ID.anugerah){
+      ({error} = await sb.from('anugerah').update(payload).eq('id', EDIT_ID.anugerah));
+    } else {
+      ({error} = await sb.from('anugerah').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-anugerah','Anugerah ditambah.');
+    showMsg('msg-anugerah', EDIT_ID.anugerah ? 'Anugerah dikemaskini.' : 'Anugerah ditambah.');
     ['a_tajuk','a_pengurniaan','a_tahun'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('a_fail').value='';
+    keluarModeEdit('anugerah','Tambah Anugerah');
     muatAnugerah();
   }catch(e){ showMsg('msg-anugerah', e.message, false); }
 }
+function editAnugerah(id){
+  const d = cariRekod('anugerah', id);
+  if(!d) return;
+  document.getElementById('a_tajuk').value = d.tajuk||'';
+  document.getElementById('a_pengurniaan').value = d.pengurniaan||'';
+  document.getElementById('a_tahun').value = d.tahun||'';
+  masukModeEdit('anugerah', id, 'Simpan Perubahan');
+}
+function batalEditAnugerah(){
+  ['a_tajuk','a_pengurniaan','a_tahun'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('a_fail').value='';
+  keluarModeEdit('anugerah','Tambah Anugerah');
+}
 async function muatAnugerah(){
   const {data} = await sb.from('anugerah').select('*').order('id',{ascending:false});
+  CACHE.anugerah = data||[];
   const el = document.getElementById('list-anugerah');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.pengurniaan||''} · ${d.tahun||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('anugerah',${d.id},'muatAnugerah')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editAnugerah(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('anugerah',${d.id},'muatAnugerah')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
 // ---------- SUMBANGAN LAIN ----------
-async function tambahSumbangan(){
+async function simpanSumbangan(){
   try{
     const file = document.getElementById('sl_gambar').files[0];
-    let gambar_url = null;
+    const existing = EDIT_ID.sumbangan ? cariRekod('sumbangan', EDIT_ID.sumbangan) : null;
+    let gambar_url = existing ? existing.gambar_url : null;
     if(file) gambar_url = await uploadFail('gambar', file);
     const payload = {
       tajuk: document.getElementById('sl_tajuk').value,
@@ -564,20 +764,43 @@ async function tambahSumbangan(){
       tahun: parseInt(document.getElementById('sl_tahun').value)||null,
       gambar_url,
     };
-    const {error} = await sb.from('sumbangan_lain').insert(payload);
+    let error;
+    if(EDIT_ID.sumbangan){
+      ({error} = await sb.from('sumbangan_lain').update(payload).eq('id', EDIT_ID.sumbangan));
+    } else {
+      ({error} = await sb.from('sumbangan_lain').insert(payload));
+    }
     if(error) throw error;
-    showMsg('msg-sumbangan','Sumbangan ditambah.');
+    showMsg('msg-sumbangan', EDIT_ID.sumbangan ? 'Sumbangan dikemaskini.' : 'Sumbangan ditambah.');
     ['sl_tajuk','sl_keterangan','sl_tahun'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('sl_gambar').value='';
+    keluarModeEdit('sumbangan','Tambah Sumbangan');
     muatSumbangan();
   }catch(e){ showMsg('msg-sumbangan', e.message, false); }
 }
+function editSumbangan(id){
+  const d = cariRekod('sumbangan', id);
+  if(!d) return;
+  document.getElementById('sl_tajuk').value = d.tajuk||'';
+  document.getElementById('sl_keterangan').value = d.keterangan||'';
+  document.getElementById('sl_tahun').value = d.tahun||'';
+  masukModeEdit('sumbangan', id, 'Simpan Perubahan');
+}
+function batalEditSumbangan(){
+  ['sl_tajuk','sl_keterangan','sl_tahun'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sl_gambar').value='';
+  keluarModeEdit('sumbangan','Tambah Sumbangan');
+}
 async function muatSumbangan(){
   const {data} = await sb.from('sumbangan_lain').select('*').order('id',{ascending:false});
+  CACHE.sumbangan = data||[];
   const el = document.getElementById('list-sumbangan');
   el.innerHTML = (data||[]).map(d=>`<div class="entry">
     <div><div class="entry-title">${d.tajuk}</div><div class="entry-sub">${d.tahun||''}</div></div>
-    <button class="btn danger" onclick="padamRekod('sumbangan_lain',${d.id},'muatSumbangan')">Padam</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn small secondary" onclick="editSumbangan(${d.id})">Edit</button>
+      <button class="btn danger" onclick="padamRekod('sumbangan_lain',${d.id},'muatSumbangan')">Padam</button>
+    </div>
   </div>`).join('') || '<p style="color:#8A7678; font-size:0.88rem;">Tiada rekod.</p>';
 }
 
