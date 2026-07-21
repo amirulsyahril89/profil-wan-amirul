@@ -481,11 +481,18 @@ function renderAnugerah(list){
 function renderSumbangan(list){
   const el = document.getElementById('sumbanganGrid');
   if(!list.length){ el.innerHTML = '<div class="empty">Belum ada sumbangan lain direkodkan.</div>'; return; }
-  const itemsHtml = list.map(s=>`<div class="card">
-    ${s.gambar_url ? `<img src="${s.gambar_url}" alt="${s.tajuk}" style="width:100%; border-radius:8px; margin-bottom:14px; aspect-ratio:4/3; object-fit:cover;">` : `<span class="icon">✦</span>`}
-    <h3>${s.tajuk}</h3>
-    <p>${s.keterangan||''}${s.tahun?' · '+s.tahun:''}</p>
-  </div>`);
+  const itemsHtml = list.map(s=>{
+    const isPdf = s.gambar_url && s.gambar_url.toLowerCase().endsWith('.pdf');
+    const visual = isPdf
+      ? `<span class="icon">📄</span>`
+      : (s.gambar_url ? `<img src="${s.gambar_url}" alt="${s.tajuk}" style="width:100%; border-radius:8px; margin-bottom:14px; aspect-ratio:4/3; object-fit:cover;">` : `<span class="icon">✦</span>`);
+    return `<div class="card">
+      ${visual}
+      <h3>${s.tajuk}</h3>
+      <p>${s.keterangan||''}${s.tahun?' · '+s.tahun:''}</p>
+      ${isPdf ? `<a class="li-link" style="display:inline-block; margin-top:12px;" href="${s.gambar_url}" target="_blank" rel="noopener">Lihat Fail</a>` : ''}
+    </div>`;
+  });
   el.innerHTML = bungkusLihatLagi('sumbanganGrid', itemsHtml, 6, true);
 }
 
